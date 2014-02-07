@@ -3350,21 +3350,12 @@ gtk_xtext_set_font (GtkXText *xtext, char *name)
 void
 gtk_xtext_set_background (GtkXText *xtext, GdkPixbuf *pixbuf)
 {
-	cairo_t *cr;
-
-	if (xtext->pixbuf)
+	if (xtext->pixbuf && (xtext->pixbuf != pixbuf))
 		g_object_unref (xtext->pixbuf);
 
 	xtext->pixbuf = pixbuf;
 
-	//if (pixbuf && gtk_widget_get_realized (GTK_WIDGET (xtext)))
-	//{
-	//	cr = gdk_cairo_create (gtk_widget_get_window (&xtext->widget));
-	//	gdk_cairo_set_source_pixbuf (cr, xtext->pixbuf, 0, 0);
-	//	cairo_pattern_set_extend (cairo_get_source (cr), CAIRO_EXTEND_REPEAT);
-	//	cairo_paint (cr);
-	//	cairo_destroy (cr);
-	//}
+	/* TODO: redraw */
 }
 
 void
