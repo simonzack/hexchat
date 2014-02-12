@@ -381,15 +381,6 @@ backend_get_text_width_slp (GtkXText *xtext, guchar *str, GSList *slp)
 }
 
 static void
-xtext_draw_layout_line (cairo_t *cr, int x, int y, PangoLayoutLine *line)
-{
-	cairo_save (cr);
-	cairo_move_to (cr, x, y);
-	pango_cairo_show_layout_line (cr, line);
-	cairo_restore (cr);
-}
-
-static void
 backend_draw_text_emph (GtkXText *xtext, gboolean dofill, int x, int y, char *str, int len, int str_width, int emphasis)
 {
 	cairo_t *cr;
@@ -1333,6 +1324,7 @@ gtk_xtext_timeout_ms (GtkXText *xtext, int pixes)
 	if (apixes < 20) return 20;
 	return 10;
 }
+
 static gint
 gtk_xtext_scrolldown_timeout (GtkXText * xtext)
 {
@@ -1352,7 +1344,6 @@ gtk_xtext_scrolldown_timeout (GtkXText * xtext)
 		return 0;
 	}
 
-	adj->value = (int)adj->value;	/* Align to line boundary */
 	xtext->select_start_y -= xtext->fontsize;
 	xtext->select_start_adj++;
 	adj->value++;
@@ -1373,6 +1364,7 @@ gtk_xtext_scrollup_timeout (GtkXText * xtext)
 	int p_y;
 	xtext_buffer *buf = xtext->buffer;
 	GtkAdjustment *adj = xtext->adj;
+	int delta_y;
 
 	gdk_window_get_pointer (GTK_WIDGET (xtext)->window, 0, &p_y, 0);
 
@@ -1385,10 +1377,16 @@ gtk_xtext_scrollup_timeout (GtkXText * xtext)
 		return 0;
 	}
 
-	adj->value = (int)adj->value;	/* Align to line boundary */
-	xtext->select_start_y += xtext->fontsize;
-	xtext->select_start_adj--;
-	adj->value--;
+	if (adj->value < 0)
+	{
+		delta_y = adj->value * xtext->fontsize;
+		adj->value = 0;
+	} else {
+		delta_y = xtext->fontsize;
+		adj->value--;
+	}
+	xtext->select_start_y += delta_y;
+	xtext->select_start_adj = adj->value;
 	gtk_adjustment_value_changed (adj);
 	gtk_xtext_selection_draw (xtext, NULL, TRUE);
 	gtk_xtext_render_ents (xtext, buf->pagetop_ent->prev, buf->last_ent_end);
