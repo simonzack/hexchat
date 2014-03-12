@@ -613,16 +613,19 @@ convert_with_fallback (const char *str, const char *fallback)
 {
 	char *utf;
 
-	utf = g_locale_to_utf8 (str, -1, 0, 0, 0);
+#ifndef WIN32
+	/* On non-Windows, g_get_user_name and g_get_real_name return a string in system locale, so convert it to utf-8. */
+	utf = g_locale_to_utf8 (str, -1, NULL, NULL, 0);
+
+	g_free(str);
+
+	/* The returned string is NULL if conversion from locale to utf-8 failed for any reason. Return the fallback. */
 	if (!utf)
-	{
-		/* this can happen if CHARSET envvar is set wrong */
-		/* maybe it's already utf8 (breakage!) */
-		if (!g_utf8_validate (str, -1, NULL))
-			utf = g_strdup (fallback);
-		else
-			utf = g_strdup (str);
-	}
+		utf = g_strdup(fallback);
+#else
+	/* On Windows, they return a string in utf-8, so don't do anything to it. The fallback isn't needed. */
+	utf = str;
+#endif
 
 	return utf;
 }
