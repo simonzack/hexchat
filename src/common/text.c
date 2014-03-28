@@ -670,7 +670,6 @@ get_stamp_str (char *fmt, time_t tim, char **ret)
 static void
 log_write (session *sess, char *text)
 {
-	char *temp;
 	char *stamp;
 	char *file;
 	int len;
@@ -712,13 +711,11 @@ log_write (session *sess, char *text)
 			g_free (stamp);
 		}
 	}
-	temp = strip_color (text, -1, STRIP_ALL);
-	len = strlen (temp);
-	write (sess->logfd, temp, len);
+	len = strlen(text);
+	write(sess->logfd, text, len);
 	/* lots of scripts/plugins print without a \n at the end */
-	if (temp[len - 1] != '\n')
+	if (text[len - 1] != '\n')
 		write (sess->logfd, "\n", 1);	/* emulate what xtext would display */
-	g_free (temp);
 }
 
 /* converts a CP1252/ISO-8859-1(5) hybrid to UTF-8                           */
