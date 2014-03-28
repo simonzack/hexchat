@@ -569,6 +569,8 @@ log_open_file (char *servname, char *channame, char *netname)
 	char buf[512];
 	int fd;
 	char *file;
+	int len = 0;
+	char *stamp;
 	time_t currenttime;
 
 	file = log_create_pathname (servname, channame, netname);
@@ -584,10 +586,20 @@ log_open_file (char *servname, char *channame, char *netname)
 
 	if (fd == -1)
 		return -1;
-	currenttime = time (NULL);
+
+	currenttime = time(NULL);
+
+	if (prefs.hex_stamp_log)
+	{
+		len = get_stamp_str(prefs.hex_stamp_log_format, currenttime, &stamp);
+	}
+	if (len == 0)
+	{
+		snprintf(stamp, sizeof (stamp), "%s", ctime(&currenttime));
+	}
+
 	write (fd, buf,
-			 snprintf (buf, sizeof (buf), _("**** BEGIN LOGGING AT %s\n"),
-						  ctime (&currenttime)));
+		snprintf(buf, sizeof (buf), _("**** BEGIN LOGGING AT %s\n"), stamp));
 
 	return fd;
 }
